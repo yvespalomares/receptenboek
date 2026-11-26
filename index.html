@@ -30,6 +30,14 @@ async function importAI(){
   const raw=await response.text();let result;try{result=JSON.parse(raw)}catch{throw Error('Onverwacht antwoord van de AI-dienst (HTTP '+response.status+').')}
   if(!response.ok||result.error)throw Error((result.error||'AI-verzoek mislukt')+' (HTTP '+response.status+')');
   const r=result.recipe||result;
+r.name=r.name||r.title;
+if(Array.isArray(r.ingredients)){
+  r.ingredients=r.ingredients.map(i=>
+    typeof i==='string'?i:
+    [i.amount,i.unit,i.name]
+      .filter(v=>v!=null&&v!=='').join(' ')
+  );
+}
   if(!r||typeof r.name!=='string'||!r.name.trim())throw Error('Geen geldige recepttitel ontvangen.');
   if(user!==active||current!==editing||!editor.open)return;
   if(!confirm('De herkende gegevens in de receptvelden plaatsen? Je kan ze nog aanpassen voor het opslaan.')){status.textContent='Import geannuleerd.';return;}
